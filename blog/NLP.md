@@ -83,8 +83,8 @@ $$
 \begin{cases}
     f_t = \sigma(W^{fx}x_t + W^{fh}h_{t-1}), & \text{遗忘门} \\
     i_t = \sigma(W^{ix}x_t + W^{ih}h_{t-1}), & \text{输入门} \\
-    \tilde{C}_t = \tanh(W^{xh}x_t + W^{hh}h_{t-1}), & \text{新信息} \\
-    C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t, & \text{传递信息} \\
+    \tilde{C}_t = \tanh(W^{xh}x_t + W^{hh}h_{t-1}), & \text{本次得到的待传递信息} \\
+    C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t, & \text{综合遗忘门的待传递信息} \\
     \\
     o_t = \sigma(W^{ox}x_t + W^{oh}h_{t-1}), & \text{输出门} \\
     h_t = o_t \odot \tanh(C_t), & \text{输出信息}
@@ -110,18 +110,21 @@ LSTM只能在一定程度上缓解RNN中的长距离依赖问题。
 抛弃了RNN的顺序性，直接对输入序列进行处理，每个词都可以与其他词进行交互。
 
 $$
-\bm{y_i} = \sum_{j=1}^{n} \alpha_{ij}\bm{x_j}
+\boldsymbol{y_i} = \sum_{j=1}^{n} \alpha_{ij}\boldsymbol{x_j}
 $$
 
-其中 $\bm{x_j}$ 为第 $j$ 个输入向量；$\alpha_{ij}$ 为第 $i$ 个输入向量与第 $j$ 个输入向量之间的注意力权重，通过注意力计算公式和softmax函数得到。列归一。
+其中 $\boldsymbol{x_j}$ 为第 $j$ 个输入向量；$\alpha_{ij}$ 为第 $i$ 个输入向量与第 $j$ 个输入向量之间的注意力权重，通过 注意力计算公式 和softmax函数得到。列归一。
 
-计算 $\alpha$ 需要两个向量，一般称作 $Q$ 和 $K$ ，由输入向量 $\bm{x}$ 通过映射矩阵得到。输入向量也可以经由一个映射矩阵后再进行输入。
-
-多头自注意力机制（Multi-Head Self-Attention Mechanism）就是设置多组映射矩阵，产生多个注意力再映射回相应的维度。
+计算 $\alpha$ 需要两个向量，一般称作 $Q$ 和 $K$ ，由输入向量 $\boldsymbol{x}$ 通过映射矩阵得到。输入向量也可以经由一个映射矩阵后再进行输入。即：
+$$
+\boldsymbol{Q=W^QX},\quad \boldsymbol{K=W^KX},\quad \boldsymbol{V=W^VX}\\
+\boldsymbol{\alpha}=\text{softmax}(\boldsymbol{\frac{QK^T}{\sqrt{d}}})\\
+$$
+多头自注意力机制（Multi-Head Self-Attention Mechanism）就是设置多组映射矩阵，产生多个注意力再整合映射回相应的维度。
 
 一个Transformer块就是多个自注意力层和前馈神经网络层的堆叠。输入还另有一个位置编码。
 
-Transformer模型分成编码器和解码器两部分，编码器由多个Transformer块组成，解码器也是。解码器还有一个额外的注意力层，用来关注编码器的输出。
+Transformer模型分成编码器和解码器两部分，编码器由多个Transformer块组成，解码器也是。解码器还有一个额外的交叉注意力层，用来关注编码器的输出。
 
 只有编码器是并行计算，解码器是串行计算。
 
